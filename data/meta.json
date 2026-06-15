@@ -1,0 +1,62 @@
+{
+  "label2id": {
+    "negative": 0,
+    "neutral": 1,
+    "positive": 2
+  },
+  "id2label": {
+    "0": "negative",
+    "1": "neutral",
+    "2": "positive"
+  },
+  "canonical_labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "splits": {
+    "train": {
+      "split": "train",
+      "n_samples": 1350,
+      "class_counts": {
+        "negative": 461,
+        "positive": 452,
+        "neutral": 437
+      }
+    },
+    "valid": {
+      "split": "valid",
+      "n_samples": 116,
+      "class_counts": {
+        "positive": 40,
+        "negative": 40,
+        "neutral": 36
+      }
+    },
+    "test": {
+      "split": "test",
+      "n_samples": 463,
+      "class_counts": {
+        "neutral": 163,
+        "positive": 157,
+        "negative": 143
+      }
+    }
+  },
+  "total": {
+    "n_samples": 1929,
+    "class_counts": {
+      "negative": 644,
+      "neutral": 636,
+      "positive": 649
+    }
+  },
+  "source": "https://github.com/fathanick/Code-mixed-Sentiment-analysis-IJE",
+  "preprocessing": {
+    "remove_urls": true,
+    "remove_mentions": true,
+    "strip_hashtag_symbol": true,
+    "lowercase": true,
+    "normalise_whitespace": true
+  }
+}
