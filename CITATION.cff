@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this dataset or software, please cite the archived release."
+title: "Indonesian-Javanese-English Sentiment Analysis with AutoML and XAI"
+version: 1.0.0
+date-released: 2026-06-15
+type: software
+abstract: >-
+  Dataset and reproducible Python pipeline for three-class sentiment
+  classification of Indonesian-Javanese-English code-mixed text using
+  TF-IDF, code-mixing features, multilingual sentence embeddings, AutoML,
+  and LIME explanations.
+authors:
+  - family-names: "Hidayatullah"
+    given-names: "Ahmad Fathan"
+    affiliation: "Department of Informatics, Universitas Islam Indonesia"
+repository-code: "https://github.com/fathanick/Indonesian-Javanese-English-Sentiment-Analysis-with-AutoML-and-XAI"
+url: "https://github.com/fathanick/Indonesian-Javanese-English-Sentiment-Analysis-with-AutoML-and-XAI"
+keywords:
+  - sentiment analysis
+  - code-mixed text
+  - Indonesian
+  - Javanese
+  - English
+  - AutoML
+  - explainable artificial intelligence
+  - LIME
+  - natural language processing
