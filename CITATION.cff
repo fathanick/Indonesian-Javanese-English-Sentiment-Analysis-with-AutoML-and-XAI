@@ -1,14 +1,18 @@
-cff-version: 1.2.0
-message: "If you use this dataset or software, please cite the archived release."
+cff-version: "1.2.0"
+message: "If you use this dataset or software, please cite this release."
 title: "Indonesian-Javanese-English Sentiment Analysis with AutoML and XAI"
-version: 1.0.0
-date-released: 2026-06-15
+version: "2.0.0"
+date-released: "2026-10-03"
 type: software
 abstract: >-
-  Dataset and reproducible Python pipeline for three-class sentiment
-  classification of Indonesian-Javanese-English code-mixed text using
-  TF-IDF, code-mixing features, multilingual sentence embeddings, AutoML,
-  and LIME explanations.
+  Corrected Python pipeline for three-class sentiment classification of
+  Indonesian-Javanese-English code-mixed text. The pipeline compares FLAML,
+  AutoGluon, and Optuna across three feature sets (TF-IDF, TF-IDF with
+  code-mixing features, and TF-IDF with multilingual sentence embeddings),
+  selects a configuration on development folds only, and explains the selected
+  model with LIME. Every executing stage is gated by an approval file that
+  binds a run to an exact protocol hash, code hash, and stage list. This
+  release also carries the fixed dataset and its documented preprocessing.
 authors:
   - family-names: "Hidayatullah"
     given-names: "Ahmad Fathan"
