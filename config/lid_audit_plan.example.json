@@ -1,0 +1,16 @@
+{
+  "model_revision": null,
+  "coverage_complete": false,
+  "checkpoint_training_evidence": null,
+  "sources": [],
+  "source_entry_example": {
+    "path": "PATH_TO_ACTUAL_IJELID_TRAINING_CSV",
+    "text_column": "text",
+    "role": "supervised_language_identifier_training",
+    "evidence": "Source documenting that this exact checkpoint used these rows"
+  },
+  "limitations": [
+    "Exact raw and cleaned text matching does not detect all near-duplicates.",
+    "Review the original pretrained encoder exposure separately from supervised IJELID fine-tuning."
+  ]
+}

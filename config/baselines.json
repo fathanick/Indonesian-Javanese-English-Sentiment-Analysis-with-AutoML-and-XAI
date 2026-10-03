@@ -1,0 +1,6 @@
+{
+  "status": "unverified_do_not_compare_numerically",
+  "entries": [],
+  "required_fields_per_entry": ["method", "source", "metric", "value", "split_evidence", "preprocessing_evidence", "verified"],
+  "note": "Do not relabel historical weighted F1 as macro F1. Add verified source information before enabling a like-for-like comparison. No historical values are copied into new result tables."
+}

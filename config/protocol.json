@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "execution_enabled": true,
+  "seed": 42,
+  "source_data": "../data",
+  "expected_rows": {
+    "train": 1350,
+    "valid": 116,
+    "test": 463
+  },
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "frameworks": [
+    "flaml",
+    "autogluon",
+    "optuna"
+  ],
+  "feature_sets": [
+    "tfidf",
+    "tfidf_cm",
+    "full"
+  ],
+  "outer_folds": 5,
+  "inner_folds": 5,
+  "inner_holdout_fold": 0,
+  "group_by": "exact_cleaned_text_sha256",
+  "primary_metric": "f1_macro",
+  "selection_rule": "highest_mean_outer_fold_macro_f1_then_configuration_order",
+  "search_budget_seconds": 300,
+  "budget_policy": "soft_search_budget_finish_current_trial_report_overrun",
+  "optuna_trials": 100,
+  "cpu_threads": 4,
+  "features": {
+    "word_ngrams": [
+      1,
+      3
+    ],
+    "char_ngrams": [
+      2,
+      4
+    ],
+    "max_word_features": 10000,
+    "max_char_features": 10000,
+    "min_df": 2,
+    "sublinear_tf": true,
+    "cm_definition": "explicit_tag_diversity_variants_not_unqualified_standard_CMI",
+    "lid": {
+      "model": "fathan/ijelid-ft-indojave-indobertweet",
+      "revision": "4b9e1e454573a1fe264cb5f50d31bd34bf68b792",
+      "provenance_reviewed": true,
+      "overlap_status": "overlap_documented",
+      "evidence_file": "ijelid_overlap_audit.json"
+    },
+    "embedding": {
+      "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42"
+    }
+  },
+  "bootstrap_replicates": 2000,
+  "lime": {
+    "sample_size": 100,
+    "num_features": 20,
+    "perturbations": 2000,
+    "batch_size": 32,
+    "min_distinct_documents": 3,
+    "stability_examples_per_class": 10,
+    "stability_runs": 10,
+    "stability_features": 10,
+    "stability_perturbations": 1000
+  },
+  "disclosures": {
+    "test_previously_inspected": true,
+    "split_origin": "supplied_partition_original_sampling_method_not_verified",
+    "historical_baselines_verified": false,
+    "external_test_overlap_policy": "retain_released_partition_report_cleaned_overlap_and_excluded_row_sensitivity"
+  }
+}

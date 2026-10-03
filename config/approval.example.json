@@ -1,0 +1,8 @@
+{
+  "approved_by": null,
+  "approved_at": null,
+  "protocol_sha256": null,
+  "code_sha256": null,
+  "allowed_stages": [],
+  "note": "Template only. Fill after explicit user approval. Never populate approval automatically."
+}

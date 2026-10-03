@@ -2,56 +2,94 @@
 
 ## Description
 
-This repository contains the dataset and reproducible Python pipeline used to
-study sentiment classification in Indonesian-Javanese-English (IJE) code-mixed
-text. The pipeline compares multiple AutoML approaches and explains model
-predictions with LIME.
+Reproducible Python pipeline for three-class sentiment classification of
+Indonesian-Javanese-English (IJE) code-mixed text. The pipeline compares three
+AutoML frameworks on three feature sets and explains the selected model with
+LIME.
 
-The task is three-class sentiment classification:
+Classes: `negative` (`label_id = 0`), `neutral` (`1`), `positive` (`2`).
 
-- `negative` (`label_id = 0`)
-- `neutral` (`label_id = 1`)
-- `positive` (`label_id = 2`)
+This repository holds the **corrected pipeline**. Every executing stage is
+gated by an approval file that binds the run to an exact protocol hash, code
+hash, and stage list — see [Execution is approval-gated](#execution-is-approval-gated).
 
-The best configuration recorded in the experiment report was
-Optuna + scikit-learn with TF-IDF features, with a weighted test F1 of `0.9160`
-and accuracy of `0.9158`.
+## Reported results
 
-## Repository Structure
+Selection uses **development folds only**; the test split is _not_ used to pick
+the configuration.
+
+| Scenario | Dev mean outer macro-F1 | Test macro F1 | Test weighted F1 | Test accuracy |
+|---|---:|---:|---:|---:|
+| `autogluon_tfidf` **(selected)** | 0.912916 | 0.890872 | 0.892321 | 0.892009 |
+| `optuna_tfidf_cm` | 0.907453 | 0.915000 | 0.916000 | 0.915767 |
+| `optuna_tfidf` | 0.908907 | 0.913000 | 0.913900 | 0.913607 |
+| `flaml_full` | 0.893236 | 0.906038 | 0.907121 | 0.907127 |
+| `autogluon_full` | 0.899557 | 0.890200 | 0.891500 | 0.892009 |
+| `flaml_tfidf_cm` | 0.901454 | 0.889194 | 0.890453 | 0.889849 |
+| `autogluon_tfidf_cm` | 0.906207 | 0.888591 | 0.889807 | 0.889849 |
+| `flaml_tfidf` | 0.902260 | 0.880047 | 0.881651 | 0.881210 |
+| `optuna_full` | 0.889397 | 0.896800 | 0.898300 | 0.898488 |
+
+The development-selected configuration is `autogluon_tfidf`. It is retained
+**regardless of its test ranking** — the honest consequence of selecting on
+development folds is that the selected configuration need not be the best
+performer on test. Here it ranks fifth of nine on test macro F1, while
+`optuna_tfidf_cm` reaches 0.9150. Reporting the test-best configuration as the
+outcome would be test-set selection; it is reported here as what it is.
+
+Macro-F1 95% interval for the selected configuration: **0.8617 – 0.9172**
+(stratified percentile bootstrap, 2,000 replicates, conditional on the fitted
+models and observed test class counts; it does not correct for prior test
+exposure or multiple comparisons).
+
+## Repository structure
 
 ```text
 .
-├── data/
-│   ├── train.csv
-│   ├── valid.csv
-│   ├── test.csv
-│   ├── train_raw.xlsx
-│   ├── valid_raw.xlsx
-│   ├── test_raw.xlsx
+├── data/                        # dataset (unchanged from the earlier release)
+│   ├── train.csv  valid.csv  test.csv
+│   ├── train_raw.xlsx  valid_raw.xlsx  test_raw.xlsx
 │   └── meta.json
-├── scripts/
-│   ├── preprocess.py
-│   ├── features.py
-│   ├── run_optuna.py
-│   ├── run_flaml.py
-│   ├── run_autogluon.py
-│   ├── run_autosklearn.py
-│   ├── evaluate.py
-│   ├── lime_analysis.py
-│   ├── visualize_results.py
-│   ├── compare_prior_study.py
-│   └── generate_report.py
-└── requirements.txt
+├── config/
+│   ├── protocol.json            # single configuration consumed by every stage
+│   ├── baselines.json           # historical baselines, disabled pending verification
+│   ├── approval.example.json    # template, NOT approval
+│   └── lid_audit_plan.example.json
+├── ije/
+│   ├── storage.py               # config/code fingerprints, stage markers, checksums
+│   ├── data.py                  # preprocessing, split validation, grouped folds
+│   ├── features.py              # TF-IDF, text statistics, CM, embeddings
+│   ├── engines.py               # FLAML, AutoGluon, Optuna adapters
+│   ├── experiment.py            # development selection, final fit, test scoring
+│   ├── explain.py               # LIME on the exact saved pipeline
+│   ├── metrics.py               # metrics and bootstrap intervals
+│   ├── audit.py                 # IJELID overlap-audit draft
+│   ├── validation.py            # protocol checks, offline tests, smoke checks
+│   └── report.py                # tables and figures from saved artifacts
+├── tests/test_protocol.py
+├── run.py                       # approval-gated stage dispatcher
+├── make_hardware_record.py
+├── make_comparability_audit.py
+├── requirements.txt
+└── README.md
 ```
 
-Generated models, feature matrices, result files, reports, and figures are
-written to `outputs/`, which is excluded from version control.
+Run directories, fitted models, feature matrices, and validation evidence are
+written under `runs/` and `validation_evidence/`, which are excluded from
+version control.
 
-## Dataset Information
+> **History.** The earlier release of this repository shipped a flat
+> `scripts/` directory written before peer review. That pipeline placed
+> preprocessing inside the cross-validation loop, which leaks into the reported
+> scores. `ije/features.py` fits vectorizers, IDF, scale, and statistics on each
+> inner-training subset only, never on its validation subset. The previous
+> scripts remain available in the Git history of this repository and in the
+> published archived release for the earlier version.
 
-The dataset contains 1,929 code-mixed social-media texts in Indonesian,
-Javanese, and English. The source dataset reports agreement between two
-annotators with Cohen's kappa of `0.9767`.
+## Dataset
+
+1,929 code-mixed social-media texts. The source dataset reports agreement
+between two annotators with Cohen's kappa of `0.9767`.
 
 | Split | Samples | Negative | Neutral | Positive |
 |---|---:|---:|---:|---:|
@@ -60,80 +98,39 @@ annotators with Cohen's kappa of `0.9767`.
 | Test | 463 | 143 | 163 | 157 |
 | Total | 1,929 | 644 | 636 | 649 |
 
-The processed CSV files contain:
+The CSVs carry `text_raw`, `text` (cleaned), `label_raw`, `label`, `label_id`,
+and `split`. `data/meta.json` records label mappings, split statistics, the
+source URL, and the preprocessing settings.
 
-| Column | Description |
-|---|---|
-| `text_raw` | Original text |
-| `text` | Preprocessed text used for modeling |
-| `label_raw` | Original sentiment label |
-| `label` | Canonical label: negative, neutral, or positive |
-| `label_id` | Numeric class identifier |
-| `split` | Train, validation, or test assignment |
+Cleaning, applied in this order: remove URLs, remove `@mentions`, drop the `#`
+symbol while keeping the word, lowercase, collapse whitespace. Punctuation,
+digits, emoji, and character repetitions are **retained** (unlike the 2024
+comparison pipeline, which removed them — a disclosed difference).
 
-`data/meta.json` records label mappings, split statistics, the source URL, and
-the preprocessing settings.
+## Method summary
 
-## Materials and Methods
-
-### Data Preprocessing
-
-`scripts/preprocess.py` downloads or loads the original XLSX splits, detects the
-text and label columns, and applies these operations in order:
-
-1. Remove HTTP, HTTPS, and `www` URLs.
-2. Remove `@mentions`.
-3. Remove the `#` symbol while retaining the hashtag word.
-4. Convert text to lowercase.
-5. Normalize repeated whitespace.
-6. Map labels to `negative`, `neutral`, and `positive`.
-7. Remove rows with unsupported labels or empty cleaned text.
-
-If an official validation or test split is unavailable, the script creates a
-stratified split with `random_state=42`. The files currently included in
-`data/` are the fixed splits used in the reported experiments.
-
-### Feature Engineering
-
-`scripts/features.py` fits preprocessing components on training data and
-creates three feature sets:
-
-1. **TF-IDF (`tfidf`)**: word n-grams `(1, 3)`, character n-grams `(2, 4)`,
-   and scaled text statistics. Each TF-IDF vectorizer is limited to 10,000
-   features and uses `min_df=2` and sublinear term frequency.
-2. **TF-IDF + code-mixing (`tfidf_cm`)**: the TF-IDF features plus
-   dictionary- and heuristic-based Indonesian, Javanese, and English ratios,
-   Code-Mixing Index, language switch points, and dominant-language indicators.
-3. **Full (`full`)**: all preceding features plus 384-dimensional sentence
-   embeddings from
-   `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`.
-
-The text statistics include word count, character count, average word length,
-punctuation count and density, digit count, and uppercase-word count.
-
-### Algorithms and Implementation
-
-| Script | Algorithm or role |
-|---|---|
-| `run_optuna.py` | Optuna TPE search over logistic regression, calibrated linear SVM, SGD, random forest, extra trees, and histogram gradient boosting |
-| `run_flaml.py` | FLAML search over LightGBM, XGBoost, random forest, extra trees, and L1/L2 logistic regression |
-| `run_autogluon.py` | AutoGluon Tabular model selection and ensembling |
-| `run_autosklearn.py` | Auto-sklearn model and preprocessing search; intended primarily for Linux |
-| `evaluate.py` | Weighted precision, recall, F1, accuracy, per-class F1, ranking, ablation, and available significance tests |
-| `lime_analysis.py` | Local Interpretable Model-agnostic Explanations, global aggregation, language contribution analysis, errors, and stability |
-| `visualize_results.py` | Publication-quality result and explanation figures |
-| `compare_prior_study.py` | Comparison figures for AutoML and prior transformer results |
-| `generate_report.py` | Builds the Markdown experiment report from saved outputs |
-
-The AutoML experiments optimize F1 through five-fold stratified
-cross-validation. Training and validation are combined for the final FLAML,
-Optuna, and auto-sklearn searches; the held-out test split is used only for
-final evaluation. Random seeds are set to `42` where supported.
+- **Features.** `tfidf`: word 1–3 grams and character 2–4 grams, each capped at
+  10,000 features, `min_df=2`, sublinear term frequency, plus scaled text
+  statistics. `tfidf_cm`: adds Indonesian/Javanese/English ratios, code-mixing
+  indices and switch points. `full`: adds 384-dimensional sentence embeddings.
+- **Grouping.** Rows sharing an exact cleaned-text SHA-256 stay in the same
+  fold, so duplicate texts cannot straddle a train/validation boundary.
+- **Selection.** Five outer folds; framework tuning uses a common inner holdout;
+  the winner is the highest mean outer-fold macro-F1, ties broken by
+  configuration order. The selection is frozen before final fitting.
+- **Final fit and test.** The selected pipeline is fitted once, then scored on
+  the held-out test split. Class-level results and the confusion matrix are kept.
+- **Explanation.** LIME calls the saved complete prediction pipeline; no
+  classifier substitution or refitting is permitted.
+- **Language identification.** Contextual language labels come from the
+  fine-tuned `fathan/ijelid-ft-indojave-indobertweet` model at a pinned revision.
+  The code-mixing definition is explicitly a tag-diversity variant, not the
+  unqualified standard CMI.
 
 ## Requirements
 
-The reported environment used Python `3.11.15`. A Python 3.11 virtual
-environment is recommended.
+The reported environment used Python 3.11 with the exact versions pinned in
+`requirements.txt`. A virtual environment is recommended:
 
 ```bash
 python3.11 -m venv .venv
@@ -142,112 +139,93 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-Install optional frameworks only when needed:
+AutoGluon is pinned because it silently drops CatBoost from its candidate pool
+when the package is absent, which would change the search space relative to the
+reported run.
+
+## Execution is approval-gated
+
+**No stage runs without an explicit approval file.** `config/approval.json` is
+not distributed — it is machine-bound and is listed in `.gitignore`. Copy the
+template and fill it yourself:
 
 ```bash
-# AutoGluon
-python -m pip install autogluon.tabular
-
-# auto-sklearn is best installed on a supported Linux environment
-python -m pip install auto-sklearn
+cp config/approval.example.json config/approval.json
 ```
 
-Auto-sklearn was not installed in the reported macOS experiment. AutoGluon,
-FLAML, and Optuna were run on CPU only. The first full-feature extraction run
-downloads the multilingual MiniLM model.
-
-## Reproducibility and Usage
-
-Run commands from the repository root.
-
-### 1. Use or rebuild the dataset
-
-The processed and raw data are already included. To rebuild the CSV files from
-the original source:
+Then set `execution_enabled: true` in `config/protocol.json`, populate
+`approved_by`, `approved_at`, the SHA-256 of `config/protocol.json`, the code
+hash from `ije.storage.code_digest`, and the stages you actually authorise in
+`allowed_stages`. Nothing in this repository populates an approval for you.
 
 ```bash
-python scripts/preprocess.py
+python run.py validate  --run-dir runs/my-run
+python run.py preflight --run-dir runs/my-run
+python run.py audit     --run-dir runs/my-run --audit-plan config/lid_audit_plan.json
+python run.py smoke     --run-dir runs/my-run
+python run.py encoders  --run-dir runs/my-run
+python run.py develop   --run-dir runs/my-run
+python run.py fit       --run-dir runs/my-run
+python run.py evaluate  --run-dir runs/my-run
+python run.py explain   --run-dir runs/my-run
+python run.py report    --run-dir runs/my-run
 ```
 
-### 2. Extract features
+Each stage verifies the artifacts of its prerequisites. A failed stage writes a
+`.failed.json` and never silently resumes or overwrites earlier results. Do not
+execute the modules directly to bypass the guards.
 
-```bash
-python scripts/features.py
-```
+`config/lid_audit_plan.example.json` is a template. The `audit` stage produces a
+draft, never a signed conclusion; a human reviewer must examine the evidence and
+sign. `make_comparability_audit.py` and `make_hardware_record.py` are the two
+standalone evidence scripts from the reported study; both read inputs that are
+**not** redistributed here and say so in their module docstrings.
 
-This creates sparse feature matrices, labels, fitted extractors, and feature
-metadata in `outputs/`.
+## Reported environment
 
-### 3. Run AutoML experiments
+- Hardware: Apple M4 Pro, 12 logical cores (8 performance + 4 efficiency), 24 GiB
+- Operating system: macOS 26.5.2 (build 25F84) arm64
+- Compute: CPU only; GPU/MPS not enabled; thread pool limited to 4
+- Schedulers: FLAML 2.5.0, AutoGluon 1.5.0, Optuna 4.7.0, scikit-learn 1.7.2
 
-The following examples use shorter budgets for a verification run:
+## Limits and disclosures
 
-```bash
-python scripts/run_optuna.py --time 600 --trials 100
-python scripts/run_flaml.py --time 1200
-python scripts/run_autogluon.py --time 3600 --preset good_quality
-```
-
-Optional Linux-only auto-sklearn run:
-
-```bash
-python scripts/run_autosklearn.py --time 3600 --per-run-time 360
-```
-
-To run one feature set with Optuna or FLAML:
-
-```bash
-python scripts/run_optuna.py --time 600 --trials 100 --fs tfidf
-python scripts/run_flaml.py --time 1200 --fs tfidf_cm
-```
-
-### 4. Evaluate and explain results
-
-```bash
-python scripts/evaluate.py
-python scripts/lime_analysis.py
-python scripts/visualize_results.py
-python scripts/compare_prior_study.py
-python scripts/generate_report.py
-```
-
-Some reporting scripts require result JSON files from the preceding experiment
-steps. Runtime and exact selected models can vary with operating system,
-processor, library version, and AutoML time budget.
-
-### Reported Environment
-
-- Hardware: Apple M4 Pro, 12 CPU cores, 24 GB unified memory
-- Operating system: macOS 26.2 arm64
-- Compute: CPU only; GPU/MPS was not enabled
-- Main libraries: pandas 2.3.3, scikit-learn 1.7.2, FLAML 2.5.0,
-  sentence-transformers 5.2.3, NumPy 2.3.5, SciPy 1.16.3, PyTorch 2.10.0
+- **The test split has been inspected during earlier work.** These results are
+  not a newly untouched external evaluation.
+- **The selected configuration is not the test-best configuration** (see above).
+- **Historical baselines stay disabled.** `config/baselines.json` is empty by
+  design: no historical value is copied into a new result table, and weighted F1
+  is never relabelled as macro F1. The 2024 comparison is made at pipeline level,
+  a difference the accompanying manuscript states.
+- **Documented preprocessing difference** against the 2024 comparison pipeline.
+- Duplicate grouping is exact-match; it does not establish the absence of all
+  near-duplicates.
+- IJELID is a pretrained transformer. CPU-only sentiment training does not make
+  the full pipeline transformer-free, and IJELID itself required GPU training.
 
 ## Citation
 
 The dataset was obtained from:
 
-> Fathanick. *Code-mixed Sentiment Analysis IJE*.  
+> Fathanick. *Code-mixed Sentiment Analysis IJE*.
 > https://github.com/fathanick/Code-mixed-Sentiment-analysis-IJE
 
-The comparison script also refers to:
+The comparison refers to:
 
 > Hidayatullah, A. F. (2024). *Code-Mixed Sentiment Analysis on
 > Indonesian-Javanese-English Text Using Transformer Models*.
 
-When using this repository in research, cite the source dataset, this
-repository, and the associated publication once its final bibliographic details
-are available.
+Cite the source dataset, this repository, and the associated publication once
+its final bibliographic details are available.
 
-## License and Contributions
+## License and contributions
 
-No software or dataset license has yet been declared in this repository.
-Unless a license is added by the copyright holder, reuse and redistribution
-rights are not granted automatically.
+No software or dataset license has yet been declared. Unless a license is added
+by the copyright holder, reuse and redistribution rights are not granted
+automatically.
 
-Contributions are welcome through GitHub issues and pull requests. A
-contribution should describe the change, preserve the fixed test split, document
-new dependencies, and include enough commands and random-seed information to
+Contributions are welcome through issues and pull requests. A contribution
+should describe the change, preserve the fixed test split, document new
+dependencies, and include enough commands and random-seed information to
 reproduce new results. Do not commit credentials, virtual environments,
-generated `outputs/`, or Python bytecode.
-
+generated run directories, or Python bytecode.
