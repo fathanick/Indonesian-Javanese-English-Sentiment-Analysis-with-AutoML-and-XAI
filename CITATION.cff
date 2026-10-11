@@ -19,6 +19,7 @@ authors:
     given-names: "Ahmad Fathan"
     affiliation: "Department of Informatics, Universitas Islam Indonesia"
 repository-code: "https://github.com/fathanick/Indonesian-Javanese-English-Sentiment-Analysis-with-AutoML-and-XAI"
+doi: "10.5281/zenodo.23299434"
 url: "https://github.com/fathanick/Indonesian-Javanese-English-Sentiment-Analysis-with-AutoML-and-XAI"
 keywords:
   - sentiment analysis

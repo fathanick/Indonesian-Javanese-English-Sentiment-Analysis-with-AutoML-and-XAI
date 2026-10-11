@@ -205,6 +205,18 @@ standalone evidence scripts from the reported study; both read inputs that are
 
 ## Citation
 
+This repository is archived at Zenodo:
+
+> Hidayatullah, A. F. (2026). *Indonesian-Javanese-English Sentiment Analysis
+> with AutoML and XAI* (2.0.0) [Computer software].
+> https://doi.org/10.5281/zenodo.23299434
+
+All versions: https://doi.org/10.5281/zenodo.23299433
+
+The archived snapshot is git tag `v2.0.0`, commit
+`f2559ad7fcaf87d5d538c2f06eb61d180b19625f`. Commits after that tag (citation
+details, documentation) are not part of the archived record.
+
 The dataset was obtained from:
 
 > Fathanick. *Code-mixed Sentiment Analysis IJE*.
@@ -220,9 +232,9 @@ its final bibliographic details are available.
 
 ## License and contributions
 
-No software or dataset license has yet been declared. Unless a license is added
-by the copyright holder, reuse and redistribution rights are not granted
-automatically.
+Released under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0) — see [`LICENSE`](LICENSE). You may share and adapt the code and
+data for any purpose, provided you give appropriate credit.
 
 Contributions are welcome through issues and pull requests. A contribution
 should describe the change, preserve the fixed test split, document new
