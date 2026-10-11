@@ -4,6 +4,7 @@ title: "Indonesian-Javanese-English Sentiment Analysis with AutoML and XAI"
 version: "2.0.0"
 date-released: "2026-10-03"
 type: software
+license: CC-BY-4.0
 abstract: >-
   Corrected Python pipeline for three-class sentiment classification of
   Indonesian-Javanese-English code-mixed text. The pipeline compares FLAML,
